@@ -1,0 +1,51 @@
+---
+# Checkfor incompatible rvm utility.
+- name: Check for the existence of rvm--rvm is not compatible with rbenv!.
+  command: "whereis -b rvm"
+  register: rvm_status
+  failed_when: rvm_status.stdout.find("/") != -1
+
+# Clone rbenv source.
+- name: Clone rbenv repository for each user.
+  git:
+    repo: "https://github.com/rbenv/rbenv.git"
+    dest: "{{ rbenv_users_home_path_prefix }}/{{ item.user }}/.rbenv"
+    update: "yes"
+    accept_hostkey: "yes"
+  with_items: "{{ rbenv_users }}"
+
+# Compile dynamic bash extension to speed up rbenv.
+- name: Configure rbenv dynamic bash extension for each user.
+  command: "chdir={{ rbenv_users_home_path_prefix }}/{{ item.user }}/.rbenv src/configure"
+  with_items: "{{ rbenv_users }}"
+  when: use_rbenv_extension
+  
+- name: Make rbenv dynamic bash extension for each user.
+  command: "chdir={{ rbenv_users_home_path_prefix }}/{{ item.user }}/.rbenv make -C src"
+  with_items: "{{ rbenv_users }}"
+  when: use_rbenv_extension
+
+- name: Add rbenv bin path to $PATH.
+  lineinfile:
+    dest: "{{ rbenv_users_home_path_prefix }}/{{ item.user }}/{{ rbenv_profile_file }}"
+    line: "{{ rbenv_export_line }}"
+  with_items: "{{ rbenv_users }}"
+
+# Install ruby-build if required.
+- name: Clone ruby-build for each user.
+  git:
+    repo: "https://github.com/rbenv/ruby-build.git"
+    dest: "{{ rbenv_users_home_path_prefix }}/{{ item.user }}/.rbenv/plugins/ruby-build"
+    update: "yes"
+    accept_hostkey: "yes"
+  with_items: "{{ rbenv_users }}"
+  when: install_ruby_build 
+
+# Make sure files have the right permissions.
+- name: Set permissions on newly cloned rbenv repos and contents.
+  file:
+    path: "{{ rbenv_users_home_path_prefix }}/{{ item.user }}/.rbenv"
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    recurse: "yes"
+  with_items: "{{ rbenv_users }}"

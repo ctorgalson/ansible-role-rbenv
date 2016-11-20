@@ -1,0 +1,22 @@
+---
+# User vars.
+rbenv_users: []
+  # - {
+  #   user: "someuser",
+  #   group: "somegroup"
+  # }
+rbenv_users_home_path_prefix: "/Users"
+
+# Whether or not "to compile dynamic bash extension to speed up
+# rbenv." Optional.
+use_rbenv_extension: True
+
+# Settings for adding rbenv to path. Between the {{ profile_file }}
+# variable and the {{ export_line }} variable, it should be possible to
+# configure this role to work with (at least) bash, zsh, and fish.
+rbenv_profile_file: ".bashrc"
+rbenv_export_line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+
+# Whether or not to install ruby-build as an rbenv plugin.
+# @see https://github.com/rbenv/ruby-build
+install_ruby_build: True
