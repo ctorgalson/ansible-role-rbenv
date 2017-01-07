@@ -1,6 +1,6 @@
 galaxy_info:
   author: ctorgalson
-  description: Installs and enables rbenv and (optionally) ruby-build.
+  description: Installs and configures rbenv and (optionally) ruby-build for one or more users on macOS or Ubuntu.
   # company: your company (optional)
 
   # If the issue tracker for your role is not on github, uncomment the
@@ -60,10 +60,10 @@ galaxy_info:
   #  - 9
   - name: MacOSX
     versions:
-    - all
+  #  - all
   #  - 10.10
-  #  - 10.11
-  #  - 10.12
+     - 10.11
+     - 10.12
   #  - 10.7
   #  - 10.8
   #  - 10.9
@@ -134,8 +134,8 @@ galaxy_info:
   #  - utopic
   #  - vivid
   #  - wily
-    - xenial
-    - yakkety
+     - xenial
+     - yakkety
   #- name: Debian
   #  versions:
   #  - all
