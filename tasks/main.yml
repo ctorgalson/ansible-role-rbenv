@@ -1,9 +1,8 @@
 ---
-# Checkfor incompatible rvm utility.
-- name: Check for the existence of rvm--rvm is not compatible with rbenv!.
-  command: "whereis -b rvm"
+- name: Check for the existence of rvm--rvm is not compatible with rbenv!
+  command: "command -v rvm"
   register: rvm_status
-  failed_when: rvm_status.stdout.find("/") != -1
+  failed_when: "rvm_status.rc == 0"
 
 # Clone rbenv source.
 - name: Clone rbenv repository for each user.
