@@ -4,6 +4,10 @@
   register: rvm_status
   failed_when: "rvm_status.rc == 0"
 
+- name: Establish home directory.
+  set_fact:
+    rbenv_user_home_dir: "{{ (ansible_system == 'Darwin') | ternary('Users', 'home') }}"
+
 # Clone rbenv source.
 - name: Clone rbenv repository for each user.
   git:
