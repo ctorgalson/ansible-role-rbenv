@@ -8,47 +8,58 @@
   set_fact:
     rbenv_user_home_dir: "{{ (ansible_system == 'Darwin') | ternary('Users', 'home') }}"
 
+- name: Set rbenv install directory.
+  set_fact:
+    rbenv_user_install_dir: "/{{ rbenv_user_home_dir }}/{{ rbenv_user.name }}/.rbenv"
+
 # Clone rbenv source.
 - name: Clone rbenv repository for each user.
   git:
     repo: "https://github.com/rbenv/rbenv.git"
-    dest: "/{{ rbenv_user_home_dir }}/{{ item.user }}/.rbenv"
-    update: "yes"
-    accept_hostkey: "yes"
-  with_items: "{{ rbenv_users }}"
+    dest: "{{ rbenv_user_install_dir }}"
+    update: true
+    accept_hostkey: true
 
 # Compile dynamic bash extension to speed up rbenv.
 - name: Configure rbenv dynamic bash extension for each user.
-  command: "chdir=/{{ rbenv_user_home_dir }}/{{ item.user }}/.rbenv src/configure"
-  with_items: "{{ rbenv_users }}"
+  command: "src/configure"
+  args:
+    chdir: "{{ rbenv_user_install_dir }}"
   when: use_rbenv_extension
 
 - name: Make rbenv dynamic bash extension for each user.
-  command: "chdir=/{{ rbenv_user_home_dir }}/{{ item.user }}/.rbenv make -C src"
-  with_items: "{{ rbenv_users }}"
+  command: "make -C src"
+  args:
+    chdir: "{{ rbenv_user_install_dir }}"
   when: use_rbenv_extension
 
+# @todo
+#   Make this in some way conditional so that it can be handled in something's
+#   dotfile.
 - name: Add rbenv bin path to $PATH.
   lineinfile:
-    dest: "/{{ rbenv_user_home_dir }}/{{ item.user }}/{{ rbenv_profile_file }}"
+    dest: "/{{ rbenv_user_home_dir }}/{{ rbenv_user.name }}/{{ rbenv_profile_file }}"
     line: "{{ rbenv_export_line }}"
-  with_items: "{{ rbenv_users }}"
 
 # Install ruby-build if required.
+#
+# @todo
+#   Make this a generic plugin installer.
 - name: Clone ruby-build for each user.
   git:
     repo: "https://github.com/rbenv/ruby-build.git"
-    dest: "/{{ rbenv_user_home_dir }}/{{ item.user }}/.rbenv/plugins/ruby-build"
-    update: "yes"
-    accept_hostkey: "yes"
-  with_items: "{{ rbenv_users }}"
-  when: install_ruby_build 
+    dest: "{{ rbenv_user_install_dir }}/plugins/ruby-build"
+    update: true
+    accept_hostkey: true
+  when: install_ruby_build
 
 # Make sure files have the right permissions.
+#
+# @todo
+#   Consider doing this after each git clone.
 - name: Set permissions on newly cloned rbenv repos and contents.
   file:
-    path: "/{{ rbenv_user_home_dir }}/{{ item.user }}/.rbenv"
-    owner: "{{ item.user }}"
-    group: "{{ item.group }}"
-    recurse: "yes"
-  with_items: "{{ rbenv_users }}"
+    path: "/{{ rbenv_user_install_dir }}"
+    owner: "{{ rbenv_user.name }}"
+    group: "{{ rbenv_user.group }}"
+    recurse: true
