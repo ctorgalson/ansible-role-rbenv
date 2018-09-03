@@ -1,0 +1,31 @@
+---
+- name: Converge
+  hosts: all
+
+  vars:
+    rbenv_user:
+      name: "lorem"
+      group: "lorem"
+
+  pre_tasks:
+    - name: Install required packages.
+      apt:
+        name: "{{ package }}"
+      loop:
+        - "curl"
+        - "gcc"
+        - "git"
+        - "libssl-dev"
+        - "libreadline-dev"
+        - "make"
+        - "zlib1g-dev"
+      loop_control:
+        loop_var: package
+
+    - name: Create user.
+      user:
+        name: "{{ rbenv_user.name }}"
+        shell: "/bin/bash"
+
+  roles:
+    - role: ansible-role-rbenv

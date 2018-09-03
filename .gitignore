@@ -1,0 +1,7 @@
+# Molecule-related.
+*.pyc
+__pycache__
+pytestdebug.log
+
+# Virtualenv related.
+.venv
