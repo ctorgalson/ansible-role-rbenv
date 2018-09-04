@@ -3,9 +3,18 @@
   hosts: all
 
   vars:
-    rbenv_user:
-      name: "lorem"
-      group: "lorem"
+    users:
+      - name: "lorem"
+        group: "lorem"
+        shell: "/bin/bash"
+        ruby_versions:
+          - 2.4.1
+          - 2.5.1
+      - name: "ipsum"
+        group: "ipsum"
+        shell: "/usr/bin/fish"
+        ruby_versions:
+          - 2.4.1
 
   pre_tasks:
     - name: Install required packages.
@@ -13,6 +22,7 @@
         name: "{{ package }}"
       loop:
         - "curl"
+        - "fish"
         - "gcc"
         - "git"
         - "libssl-dev"
@@ -22,10 +32,20 @@
       loop_control:
         loop_var: package
 
-    - name: Create user.
+    - name: Create users.
       user:
-        name: "{{ rbenv_user.name }}"
-        shell: "/bin/bash"
+        name: "{{ user.name }}"
+        shell: "{{ user.shell }}"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
 
-  roles:
-    - role: ansible-role-rbenv
+  tasks:
+    - include_role:
+        name: ansible-role-rbenv
+      vars:
+        rbenv_user: "{{ user }}"
+        rbenv_ruby_build_versions: "{{ user.ruby_versions }}"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
