@@ -1,0 +1,21 @@
+---
+- name: Find shell for the current user.
+  command: "echo $SHELL"
+  become: true
+  become_user: "{{ rbenv_user.name }}"
+  register: rbenv_user_shell
+  changed_when: false
+
+- name: Set home directory parent.
+  set_fact:
+    rbenv_user_home_dir_parent: "{{ (ansible_system == 'Darwin') | ternary('Users', 'home') }}"
+
+- name: Set user home directory.
+  set_fact:
+    rbenv_user_home_dir: "/{{ rbenv_user_home_dir_parent }}/{{ rbenv_user.name }}"
+
+- name: Set rbenv install and plugin directories.
+  set_fact:
+    rbenv_user_install_dir: "{{ rbenv_user_home_dir }}/.rbenv"
+    rbenv_user_plugins_dir: "{{ rbenv_user_home_dir }}/.rbenv/plugins"
+    rbenv_user_binary: "{{ rbenv_user_home_dir }}/.rbenv/bin/rbenv"

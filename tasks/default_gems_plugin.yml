@@ -1,0 +1,7 @@
+---
+- name: Create default-gems file.
+  copy:
+    content: "{{ rbenv_default_gems }}"
+    dest: "{{ rbenv_user_install_dir }}/default-gems"
+    owner: "{{ rbenv_user.name }}"
+    group: "{{ rbenv_user.group }}"

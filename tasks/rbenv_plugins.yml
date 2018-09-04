@@ -1,0 +1,32 @@
+---
+- name: Clone rbenv plugins for user.
+  git:
+    repo: "https://github.com/{{ plugin.repo }}.git"
+    dest: "{{ rbenv_user_install_dir }}/plugins/{{ plugin.repo | regex_replace('[^/]+/', '') }}"
+    update: true
+    accept_hostkey: true
+    version: "{{ plugin.version | default('master') }}"
+  loop: "{{ rbenv_plugins | default([]) }}"
+  loop_control:
+    loop_var: plugin
+
+- name: Set permissions on newly cloned rbenv repos and contents.
+  file:
+    path: "{{ rbenv_user_install_dir }}"
+    owner: "{{ rbenv_user.name }}"
+    group: "{{ rbenv_user.group }}"
+    recurse: true
+  changed_when: false
+
+- name: Rehash Rbenv.
+  command: "{{ rbenv_user_binary }} rehash"
+  become: true
+  become_user: "{{ rbenv_user.name }}"
+  changed_when: false
+
+- name: Assemble a list of all of the installed plugins.
+  command: "find . -maxdepth 1 -type d"
+  args:
+    chdir: "{{ rbenv_user_plugins_dir }}"
+  register: rbenv_installed_plugins
+  changed_when: false

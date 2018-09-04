@@ -1,0 +1,18 @@
+---
+- name: Ensure specified Ruby version is installed.
+  block:
+    - name: Find locally installed versions of Ruby.
+      command: "{{ rbenv_user_binary }} versions"
+      register: rbenv_available_local_versions
+      become: true
+      become_user: "{{ rbenv_user.name }}"
+      changed_when: false
+      # The rc is 1 when no installed ruby version is found. We do not fail
+      # the task in that case. But any other error code is fair game...
+      failed_when: "rbenv_available_local_versions.rc > 1"
+
+    - name: Install specified Ruby version(s).
+      command: "{{ rbenv_user_binary }} install {{ version }}"
+      become: true
+      become_user: "{{ rbenv_user.name }}"
+      when: "version not in rbenv_available_local_versions.stdout"

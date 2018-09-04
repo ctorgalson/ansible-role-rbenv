@@ -1,0 +1,13 @@
+---
+- name: Verify that RVM is absent.
+  block:
+    - name: Check for the existence of rvm.
+      command: "command -v rvm"
+      register: rvm_status
+      changed_when: false
+      failed_when: false
+
+    - name: Halt playbook if rvm was found.
+      assert:
+        that: "rvm_status.rc != 0"
+        msg: "rvm was found! rvm and rbenv cannot be used simultaneously."
