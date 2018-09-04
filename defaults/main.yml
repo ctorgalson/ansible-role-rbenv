@@ -1,22 +1,57 @@
 ---
 # User vars.
-rbenv_users: []
-  # - {
-  #   user: "someuser",
-  #   group: "somegroup"
-  # }
-rbenv_users_home_path_prefix: "/Users"
+
+rbenv_user: []
+#  name: "someuser",
+#  group: "somegroup"
+
+# Define version using any input acceptable to the Ansible Git module's
+# "version" property.
+rbenv_version: "master"
 
 # Whether or not "to compile dynamic bash extension to speed up
 # rbenv." Optional.
-use_rbenv_extension: True
+rbenv_use_bash_extension: true
 
 # Settings for adding rbenv to path. Between the {{ profile_file }}
 # variable and the {{ export_line }} variable, it should be possible to
 # configure this role to work with (at least) bash, zsh, and fish.
+#
+# @todo: Handle this dynamically--currently, it's the only thing that stops
+# this happening with no required configuration.
+#
+# For zsh:
+# rbenv_profile_file: ".zshrc"
+# For bash:
 rbenv_profile_file: ".bashrc"
-rbenv_export_line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+rbenv_fish_profile_file: ".config/fish/config.fish"
 
-# Whether or not to install ruby-build as an rbenv plugin.
-# @see https://github.com/rbenv/ruby-build
-install_ruby_build: True
+# Set this to false if you want to manage your path manually/differently.
+rbenv_update_path: true
+
+# Use the default for bash or zsh, the commented-out option for fish.
+rbenv_shell_export_command: "export PATH=\"$HOME/.rbenv/bin:$PATH\""
+rbenv_shell_init_command: "eval \"$(rbenv init -)\""
+# Note: normally this command would contain `$HOME`, but Ansible won't resolve
+# that correctly, even when running with `become_user: true`, so we substitute
+# a fact derived in setup.yml.
+rbenv_fish_export_command: "set -Ux fish_user_paths {{ rbenv_user_home_dir }}/.rbenv/bin $fish_user_paths"
+rbenv_fish_init_command: "status --is-interactive; and source (rbenv init -|psub)"
+
+# List of plugins to install.
+rbenv_plugins:
+  - repo: "rbenv/rbenv-default-gems"
+    version: master
+  - repo: "rbenv/ruby-build"
+    version: master
+
+# Plugin vars.
+#
+# default-gems
+rbenv_default_gems: |
+  bundler
+
+# ruby-build
+rbenv_ruby_build_versions:
+  - "2.4.1"
+  - "2.5.1"
