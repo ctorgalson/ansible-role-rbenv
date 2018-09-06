@@ -14,7 +14,7 @@
         group: "ipsum"
         shell: "/usr/bin/fish"
         ruby_versions:
-          - 2.4.1
+          - 2.5.1
 
   pre_tasks:
     - name: Install required packages.
@@ -41,7 +41,8 @@
         loop_var: user
 
   tasks:
-    - include_role:
+    - name: Install and configure rbenv.
+      include_role:
         name: ansible-role-rbenv
       vars:
         rbenv_user: "{{ user }}"
@@ -49,3 +50,17 @@
       loop: "{{ users }}"
       loop_control:
         loop_var: user
+
+    - name: Set Ruby version.
+      shell: "/home/{{ user.name }}/.rbenv/bin/rbenv local 2.5.1"
+      args:
+        chdir: "/home/{{ user.name }}"
+        executable: "{{ user.shell }}"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+      become: true
+      become_user: "{{ user.name }}"
+      changed_when: false
+      tags:
+        - skip_ansible_lint
